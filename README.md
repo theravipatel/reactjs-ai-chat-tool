@@ -1,16 +1,44 @@
-# React + Vite
+# Simple AI Chat Tool using React JS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 1) Installation
 
-Currently, two official plugins are available:
+- Install Node.js
+- Install Vite
+    - Why Vite?
+        - Officially recommended by React docs
+        - Super fast dev server
+        - Cleaner build process
+        - Supports TypeScript, CSS modules, pre-processors, and more!
+- Setup React App via Terminal:
+    -   ```
+        npm create vite@latest
+        ```
+    - Follow the prompts and select as per your need
+- Install Node Modules
+    -   ```
+        npm install
+        ```
+- Run the React App
+    -   ```
+        npm run dev
+        ```
+    - App should now run on localhost:5173 (Vite's default port).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## React Compiler
+## 2) Installation of Tailwind CSS in React
+- To install `Tailwind CSS v4` in a React.js project built with Vite, follow the streamlined step-by-step guide from the official site i.e. (As of today - https://tailwindcss.com/docs/installation/using-vite). Vite is the modern, industry-standard tool for creating React applications.
+- 1) Install `tailwindcss` and `@tailwindcss/vite` via npm:
+    - `npm install tailwindcss @tailwindcss/vite`
+- 2) Add the `@tailwindcss/vite` plugin to your Vite configuration:
+    -   ```jsx
+        import tailwindcss from '@tailwindcss/vite'
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+        export default defineConfig({
+            plugins: [
+                tailwindcss(),
+            ],
+        })
+        ```
+- 3) Add an `@import` to our CSS file that imports Tailwind CSS.
+    - `@import "tailwindcss";`
+- 4) Run your build process with npm run dev or whatever command is configured in your package.json file.
