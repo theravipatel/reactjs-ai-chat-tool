@@ -1,6 +1,29 @@
+import { GoogleGenAI } from '@google/genai';
 import './App.css'
+import { useState } from 'react';
 
 function App() {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    const ai = new GoogleGenAI({apiKey});
+
+    const [inputMessage, setInputMessage] = useState('');
+    const [responseMessage, setResponseMessage] = useState('');
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        
+        try {
+            const response = await ai.interactions.create({
+                model: 'gemini-3.8-flash',
+                input: inputMessage,
+            });
+            setResponseMessage(response.output_text);
+        } catch (error) {
+            setResponseMessage(error.message || "Network exception during API token execution.");
+        }
+        setInputMessage('');
+    }
+
     return (
         <div className='grid grid-cols-5 h-screen'>
             {/* Left Section */}
@@ -33,23 +56,36 @@ function App() {
             {/* Right Section */}
             <main className='col-span-4 bg-zinc-900 flex flex-col p-6'>
                 <div className='flex-1 text-center pt-4'>
-                    <h1 className='text-4xl bg-linear-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent h-16'>
-                        Hello User, Ask me Anything
-                    </h1>
+                    {
+                        !responseMessage && 
+                            <h1 className='text-4xl bg-linear-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent h-16'>
+                                Hello User, Ask me Anything
+                            </h1>
+                    }
+                    {
+                        responseMessage && <div className='text-white'> {responseMessage}</div>
+                    }
                 </div>
  
-                <div className='w-1/2 min-w-80 mx-auto mb-4 h-16 flex items-center rounded-full bg-zinc-800 border border-zinc-600 pl-5 pr-6'>
-                    <input
-                        type='text'
-                        className='flex-1 h-full bg-transparent outline-none text-white placeholder:text-zinc-400'
-                        placeholder='Ask me anything'
-                    />
-                    <button
-                        type='button'
-                        className='ml-3 cursor-pointer text-white hover:text-pink-400'
+                <div>
+                    <form
+                        className='w-1/2 min-w-80 mx-auto mb-4 h-16 flex items-center rounded-full bg-zinc-800 border border-zinc-600 pl-5 pr-6'
+                        onSubmit={handleFormSubmit}
                     >
-                        Ask
-                    </button>
+                        <input
+                            type='text'
+                            className='flex-1 h-full bg-transparent outline-none text-white placeholder:text-zinc-400'
+                            placeholder='Ask me anything'
+                            onChange={(event) => setInputMessage(event.target.value)}
+                            value={inputMessage}
+                        />
+                        <button
+                            type='submit'
+                            className='ml-3 cursor-pointer text-white hover:text-pink-400'
+                        >
+                            Ask
+                        </button>
+                    </form>
                 </div>
             </main>
             {/* Right Section */}
