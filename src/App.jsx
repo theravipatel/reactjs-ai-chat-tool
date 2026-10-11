@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import './App.css'
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 function App() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -25,9 +26,9 @@ function App() {
     }
 
     return (
-        <div className='grid grid-cols-5 h-screen'>
+        <div className='grid grid-cols-5 h-screen w-screen overflow-hidden bg-zinc-900'>
             {/* Left Section */}
-            <aside className='col-span-1 bg-zinc-800 overflow-y-auto'>
+            <aside className='hidden md:block col-span-1 border-r border-zinc-800 bg-zinc-950'>
                 <h3 className='flex items-center justify-between gap-2 text-xl text-white bg-zinc-700 p-3 border-b border-zinc-500'>
                     <span>Recent Searches</span>
                     <button
@@ -54,34 +55,42 @@ function App() {
             </aside>
             {/* Left Section */}
             {/* Right Section */}
-            <main className='col-span-4 bg-zinc-900 flex flex-col p-6'>
-                <div className='flex-1 text-center pt-4'>
-                    {
-                        !responseMessage && 
-                            <h1 className='text-4xl bg-linear-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent h-16'>
-                                Hello User, Ask me Anything
-                            </h1>
-                    }
-                    {
-                        responseMessage && <div className='text-white'> {responseMessage}</div>
-                    }
+            <main className='col-span-5 md:col-span-4 flex flex-col h-full overflow-hidden relative'>
+                <div className='flex-1 overflow-y-auto p-6 scrollbar-thin'>
+                    <div className='max-w-3xl mx-auto w-full pt-4 pb-24 text-left'>
+                        {
+                            !responseMessage && 
+                                <div className='h-[50vh] flex items-center justify-center'>
+                                    <h1 className='text-4xl text-center font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent'>
+                                        Hello User, Ask me Anything
+                                    </h1>
+                                </div>
+                        }
+                        {
+                            responseMessage && (
+                                <div className='text-zinc-100 max-w-none tracking-wide leading-relaxed'>
+                                    <ReactMarkdown>{ responseMessage }</ReactMarkdown>
+                                </div>
+                            )
+                        }
+                    </div>
                 </div>
  
-                <div>
+                <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-zinc-900 via-zinc-900 via-80% to-transparent pt-6 pb-6 px-6'>
                     <form
-                        className='w-1/2 min-w-80 mx-auto mb-4 h-16 flex items-center rounded-full bg-zinc-800 border border-zinc-600 pl-5 pr-6'
+                        className='w-full max-w-2xl mx-auto h-14 flex items-center rounded-full bg-zinc-800 border border-zinc-700 pl-5 pr-6 focus-within:border-pink-500 shadow-2xl transition-all'
                         onSubmit={handleFormSubmit}
                     >
                         <input
                             type='text'
-                            className='flex-1 h-full bg-transparent outline-none text-white placeholder:text-zinc-400'
-                            placeholder='Ask me anything'
+                            className='flex-1 h-full bg-transparent outline-none text-white placeholder:text-zinc-500 text-sm'
+                            placeholder='Ask me anything...'
                             onChange={(event) => setInputMessage(event.target.value)}
                             value={inputMessage}
                         />
                         <button
                             type='submit'
-                            className='ml-3 cursor-pointer text-white hover:text-pink-400'
+                            className='ml-3 cursor-pointer text-sm font-semibold text-white hover:text-pink-400 active:scale-95 transition-transform'
                         >
                             Ask
                         </button>

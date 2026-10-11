@@ -69,3 +69,17 @@
             });
             conole.log(response.output_text);
             ```
+
+
+## 4) Format the Gemini Raw response by using react-markdown library
+- Gemini provides structured text formatted in Markdown by default (`*** or **`).
+- Placing Markdown syntax natively into a React JSX layout causes text to display raw punctuation characters rather than structured layout headers and linebreaks.
+- To resolve this gracefully, used the react-markdown library to convert formatting structures dynamically into matching Tailwind CSS elements.
+    - Command to install:
+        -   ```cmd
+            npm install react-markdown
+            ```
+    - Example:
+        -   ```jsx
+            <ReactMarkdown>{ responseMessage }</ReactMarkdown>
+            ```
