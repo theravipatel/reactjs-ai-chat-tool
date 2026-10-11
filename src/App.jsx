@@ -14,9 +14,12 @@ function App() {
     const [chatHistory, setChatHistory] = useState([]);
 
     // Tracking the server-side conversation ID state thread
-    const [lastInteractionId, setLastInteractionId] = useState(null);
+    const [interactionId, setInteractionId] = useState(null);
 
     const [isLoading, setIsLoading] = useState(false);
+
+    // Maintain session arrays inside local state
+    const [sessions, setSessions] = useState([]);
 
     const chatContainerRef = useRef(null);
     // Dynamic auto-scrolling to the bottom layout line
@@ -29,14 +32,36 @@ function App() {
         }
     }, [chatHistory, isLoading]);
 
+    // Fetch recent interations from local storage
+    useEffect(() => {
+        const savedSessions = localStorage.getItem('chat_sessions');
+        if (savedSessions) {
+            const parsedSessions = JSON.parse(savedSessions);
+            setSessions(parsedSessions);
+        }
+    }, []);
+
+    const handleNewChat = () => {
+        setChatHistory([]);
+        setInteractionId(null);
+    };
+
+    const handleSelectSession = (session) => {
+        setChatHistory(session.history);
+        setInteractionId(session.id);
+    };
+
     const handleFormSubmit = async (e) => {
         e.preventDefault();
 
         const userPrompt = inputMessage.trim();
         if (!userPrompt || isLoading) return;
 
+        const currentActiveId = interactionId;
+        const updatedHistory = [...chatHistory, { role: 'user', text: userPrompt }];
+
         // Append user prompt straight to the client history tracking state
-        setChatHistory(prev => [...prev, {role: 'user', text: userPrompt}]);
+        setChatHistory(updatedHistory);
         setInputMessage('');
         setIsLoading(true);
 
@@ -45,15 +70,44 @@ function App() {
                 model: 'gemini-3.8-flash',
                 input: userPrompt,
                 // Link turn to previous conversation node if one exists
-                previous_interaction_id: lastInteractionId || undefined, 
+                previous_interaction_id: currentActiveId || undefined, 
             });
 
+            const nextInteractionId = response.id;
+            setInteractionId(nextInteractionId);
+
             // Extract text correctly from .output_text and update server state tracking ID
-            const aiText = response.output_text;
-            setLastInteractionId(response.id);
+            const finalHistory = [...updatedHistory, { role: 'model', text: response.output_text }];
 
             // Append ai prompt straight to the client history tracking state
-            setChatHistory(prev => [...prev, {role: 'model', text: aiText}]);
+            setChatHistory(finalHistory);
+
+            // Update and save chat sessions
+            setSessions(prevSessions => {
+                const firstUserMsg = finalHistory.find(msg => msg.role === 'user')?.text || userPrompt;
+                const sessionTitle = firstUserMsg;
+
+                let nextSessions;
+                if (!currentActiveId) {
+                    // Current Chat: Add new entry to the top of the list
+                    nextSessions = [{
+                        id: nextInteractionId,
+                        title: sessionTitle,
+                        history: finalHistory
+                    }, ...prevSessions];
+                } else {
+                    // Other Chats: Replace matching ID nodes to update historical tracking arrays
+                    nextSessions = prevSessions.map(session => 
+                        session.id === currentActiveId 
+                            ? { ...session, id: nextInteractionId, history: finalHistory }
+                            : session
+                    );
+                }
+
+                // Persist the array update to the browser's persistent storage engine
+                localStorage.setItem('chat_sessions', JSON.stringify(nextSessions));
+                return nextSessions;
+            });
         } catch (error) {
             setChatHistory(prev => [...prev, { role: 'model', text: error.message || "Network exception during API execution." }]);
         } finally {
@@ -64,31 +118,42 @@ function App() {
     return (
         <div className='grid grid-cols-5 h-screen w-screen overflow-hidden bg-zinc-900'>
             {/* Left Section */}
-            <aside className='hidden md:block col-span-1 border-r border-zinc-800 bg-zinc-950'>
-                <h3 className='flex items-center justify-between gap-2 text-xl text-white bg-zinc-700 p-3 border-b border-zinc-500'>
-                    <span>Recent Searches</span>
-                    <button
-                        type='button'
-                        aria-label='Clear recent searches'
-                        className='cursor-pointer'
-                    >
-                        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'
-                            stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'
-                            className='w-5 h-5'>
-                            <path d='M3 6h18' />
-                            <path d='M8 6V4h8v2' />
-                            <path d='M6 6l1 14h10l1-14' />
-                            <path d='M10 11v5M14 11v5' />
-                        </svg>
-                    </button>
-                </h3>
- 
-                <ul className='mt-3 space-y-1 text-white list-disc list-inside'>
-                    <li className='truncate text-sm text-zinc-300 hover:text-white cursor-pointer p-2 border-b border-zinc-700'>Test 1</li>
-                    <li className='truncate text-sm text-zinc-300 hover:text-white cursor-pointer p-2 border-b border-zinc-700'>Test 1</li>
-                    <li className='truncate text-sm text-zinc-300 hover:text-white cursor-pointer p-2 border-b border-zinc-700'>Test 1</li>
-                </ul>
-            </aside>
+            <div className='hidden md:flex flex-col col-span-1 border-r border-zinc-800 bg-zinc-950 p-2 h-full overflow-hidden'>
+                <button 
+                    onClick={handleNewChat}
+                    className='w-full py-2.5 px-4 mb-6 rounded-full border border-zinc-700 text-zinc-200 text-xs font-medium hover:bg-zinc-800 hover:border-pink-500 transition-all cursor-pointer text-center'
+                >
+                    + New Chat
+                </button>
+
+                <div className='text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 px-2 border-b border-zinc-700 pb-2'>
+                    Recent Chats
+                </div>
+
+                <div className='flex-1 overflow-y-auto space-y-1'>
+                    {
+                        sessions.length === 0 && (
+                            <div className='text-xs text-zinc-600 italic px-2 mt-2'>No recent sessions</div>
+                        )
+                    }
+                    {
+                        sessions.map((session) => (
+                            <button
+                                key={session.id}
+                                onClick={() => handleSelectSession(session)}
+                                className={`w-full text-left p-2 rounded-xl text-xs truncate font-medium transition-all cursor-pointer block ${
+                                    interactionId === session.id 
+                                        ? 'bg-zinc-800 border-l-2 border-pink-500 text-white shadow-md' 
+                                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                                }`}
+                                title={session.title}
+                            >
+                                💬 { session.title.length > 50 ? session.title.substring(0, 50) + "..." : session.title }
+                            </button>
+                        ))
+                    }
+                </div>
+            </div>
             {/* Left Section */}
             {/* Right Section */}
             <main className='col-span-5 md:col-span-4 flex flex-col h-full overflow-hidden relative'>
