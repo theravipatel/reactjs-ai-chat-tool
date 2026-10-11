@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import './App.css'
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 function App() {
@@ -17,6 +17,17 @@ function App() {
     const [lastInteractionId, setLastInteractionId] = useState(null);
 
     const [isLoading, setIsLoading] = useState(false);
+
+    const chatContainerRef = useRef(null);
+    // Dynamic auto-scrolling to the bottom layout line
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTo({
+                top: chatContainerRef.current.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
+    }, [chatHistory, isLoading]);
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
@@ -81,7 +92,10 @@ function App() {
             {/* Left Section */}
             {/* Right Section */}
             <main className='col-span-5 md:col-span-4 flex flex-col h-full overflow-hidden relative'>
-                <div className='flex-1 overflow-y-auto p-6 scrollbar-thin'>
+                <div
+                    className='flex-1 overflow-y-auto p-6 scrollbar-thin'
+                    ref={chatContainerRef}
+                >
                     <div className='max-w-3xl mx-auto w-full pt-4 pb-24 text-left'>
                         {
                             chatHistory.length === 0 && 
