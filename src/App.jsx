@@ -7,22 +7,47 @@ function App() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     const ai = new GoogleGenAI({apiKey});
 
+    // User input
     const [inputMessage, setInputMessage] = useState('');
-    const [responseMessage, setResponseMessage] = useState('');
+
+    // Client-side UI array for rendering message
+    const [chatHistory, setChatHistory] = useState([]);
+
+    // Tracking the server-side conversation ID state thread
+    const [lastInteractionId, setLastInteractionId] = useState(null);
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        
+
+        const userPrompt = inputMessage.trim();
+        if (!userPrompt || isLoading) return;
+
+        // Append user prompt straight to the client history tracking state
+        setChatHistory(prev => [...prev, {role: 'user', text: userPrompt}]);
+        setInputMessage('');
+        setIsLoading(true);
+
         try {
             const response = await ai.interactions.create({
                 model: 'gemini-3.8-flash',
-                input: inputMessage,
+                input: userPrompt,
+                // Link turn to previous conversation node if one exists
+                previous_interaction_id: lastInteractionId || undefined, 
             });
-            setResponseMessage(response.output_text);
+
+            // Extract text correctly from .output_text and update server state tracking ID
+            const aiText = response.output_text;
+            setLastInteractionId(response.id);
+
+            // Append ai prompt straight to the client history tracking state
+            setChatHistory(prev => [...prev, {role: 'model', text: aiText}]);
         } catch (error) {
-            setResponseMessage(error.message || "Network exception during API token execution.");
+            setChatHistory(prev => [...prev, { role: 'model', text: error.message || "Network exception during API execution." }]);
+        } finally {
+            setIsLoading(false);
         }
-        setInputMessage('');
     }
 
     return (
@@ -59,20 +84,45 @@ function App() {
                 <div className='flex-1 overflow-y-auto p-6 scrollbar-thin'>
                     <div className='max-w-3xl mx-auto w-full pt-4 pb-24 text-left'>
                         {
-                            !responseMessage && 
+                            chatHistory.length === 0 && 
                                 <div className='h-[50vh] flex items-center justify-center'>
                                     <h1 className='text-4xl text-center font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent'>
                                         Hello User, Ask me Anything
                                     </h1>
                                 </div>
                         }
-                        {
-                            responseMessage && (
-                                <div className='text-zinc-100 max-w-none tracking-wide leading-relaxed'>
-                                    <ReactMarkdown>{ responseMessage }</ReactMarkdown>
-                                </div>
-                            )
-                        }
+                        <div className="space-y-6">
+                            {
+                                chatHistory.map((msg, index) => (
+                                    <div 
+                                        key={index} 
+                                        className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                                    >
+                                        <div className='text-xs font-semibold mb-1 text-zinc-500 uppercase tracking-wider'>
+                                            {msg.role === 'user' ? 'You' : 'AI'}
+                                        </div>
+                                        <div className={`max-w-[85%] rounded-2xl px-4 py-3 tracking-wide leading-relaxed text-zinc-100 ${
+                                            msg.role === 'user' 
+                                                ? 'bg-zinc-800 border border-zinc-700 rounded-tr-none' 
+                                                : 'bg-transparent max-w-none w-full px-0'
+                                        }`}>
+                                            <ReactMarkdown>
+                                                {msg.text}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+
+                            {
+                                isLoading && (
+                                    <div className="flex flex-col items-start animate-pulse">
+                                        <div className="text-xs font-semibold mb-1 text-zinc-500 uppercase tracking-wider">AI</div>
+                                        <div className="text-sm text-zinc-400 italic">Thinking...</div>
+                                    </div>
+                                )
+                            }
+                        </div>
                     </div>
                 </div>
  
@@ -83,14 +133,16 @@ function App() {
                     >
                         <input
                             type='text'
-                            className='flex-1 h-full bg-transparent outline-none text-white placeholder:text-zinc-500 text-sm'
-                            placeholder='Ask me anything...'
+                            disabled={isLoading}
+                            className='flex-1 h-full bg-transparent outline-none text-white placeholder:text-zinc-500 text-sm disabled:opacity-50'
+                            placeholder={isLoading ? 'AI is evaluating prompt...' : 'Ask me anything...'}
                             onChange={(event) => setInputMessage(event.target.value)}
                             value={inputMessage}
                         />
                         <button
                             type='submit'
-                            className='ml-3 cursor-pointer text-sm font-semibold text-white hover:text-pink-400 active:scale-95 transition-transform'
+                            disabled={isLoading || !inputMessage.trim()}
+                            className='ml-3 cursor-pointer text-sm font-semibold text-white hover:text-pink-400 disabled:opacity-30 disabled:hover:text-white active:scale-95 transition-transform'
                         >
                             Ask
                         </button>
