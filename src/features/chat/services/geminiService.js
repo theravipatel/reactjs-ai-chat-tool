@@ -1,16 +1,35 @@
 import { GoogleGenAI } from '@google/genai';
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+export async function validateApiKey(apiKey) {
+    const key = apiKey.trim();
 
-if (!apiKey) {
-    throw new Error(
-        'Missing API key.'
-    );
+    if (!key) {
+        throw new Error('Please enter your Gemini API key.');
+    }
+
+    const ai = new GoogleGenAI({ apiKey: key });
+
+    await ai.interactions.create({
+        model: 'gemini-3.8-flash',
+        input: 'Reply with OK.',
+    });
+
+    return true;
 }
 
-const ai = new GoogleGenAI({ apiKey });
+export async function sendMessage(
+    prompt,
+    previousInteractionId,
+    apiKey
+) {
+    const key = apiKey?.trim();
 
-export async function sendMessage(prompt, previousInteractionId) {
+    if (!key) {
+        throw new Error('Missing Gemini API key.');
+    }
+
+    const ai = new GoogleGenAI({ apiKey: key });
+
     const response = await ai.interactions.create({
         model: 'gemini-3.8-flash',
         input: prompt,
@@ -28,7 +47,9 @@ export async function sendMessage(prompt, previousInteractionId) {
         typeof response.id !== 'string' ||
         !response.id
     ) {
-        throw new Error('Gemini response is missing its interaction ID.');
+        throw new Error(
+            'Gemini response is missing its interaction ID.'
+        );
     }
 
     return {

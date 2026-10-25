@@ -1,11 +1,20 @@
-import './App.css'
-import { useEffect, useRef } from 'react';
+import './App.css';
+import { useEffect, useRef, useState } from 'react';
 import { useChat } from './features/chat/hooks/useChat';
 import MessageList from './features/chat/components/MessageList';
 import ChatSidebar from './features/chat/components/ChatSidebar';
 import ChatInput from './features/chat/components/ChatInput';
+import WelcomeScreen from './features/onboarding/components/WelcomeScreen';
 
 function App() {
+    const [isSetupComplete, setIsSetupComplete] = useState(
+        () =>
+            Boolean(
+                localStorage.getItem('gemini_api_key')?.trim() &&
+                localStorage.getItem('display_name')?.trim()
+            )
+    );
+
     const {
         chatHistory,
         activeSessionId,
@@ -26,6 +35,14 @@ function App() {
             });
         }
     }, [chatHistory, isLoading]);
+
+    if (!isSetupComplete) {
+        return (
+            <WelcomeScreen
+                onSetupComplete={() => setIsSetupComplete(true)}
+            />
+        );
+    }
 
     return (
         <div className='grid grid-cols-5 h-screen w-screen overflow-hidden bg-zinc-900'>

@@ -130,9 +130,16 @@ export function useChat() {
         let result;
 
         try {
+            const apiKey = localStorage.getItem('gemini_api_key');
+
+            if (!apiKey?.trim()) {
+                throw new Error('Gemini API key is not configured.');
+            }
+
             result = await sendMessage(
                 userPrompt,
-                currentInteractionId
+                currentInteractionId,
+                apiKey
             );
         } catch (error) {
             console.error(
@@ -140,7 +147,9 @@ export function useChat() {
                 error
             );
 
-            const errorMessage = 'Sorry, I couldn’t get a response. Please try again.';
+            const errorMessage = !localStorage.getItem('gemini_api_key')?.trim()
+                ? 'Your Gemini API key is missing. Please refresh the page and complete setup again.'
+                : 'Sorry, I couldn’t get a response. Please check your API key and try again.';
 
             const failedMessage = createMessage(
                 'model',
