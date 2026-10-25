@@ -1,0 +1,67 @@
+.welcome-shell {
+	background-color: #18181b;
+	background-image:
+		linear-gradient(rgba(161, 161, 170, 0.035) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(161, 161, 170, 0.035) 1px, transparent 1px);
+	background-size: 48px 48px;
+}
+
+.welcome-enter {
+	animation: welcome-enter 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.welcome-enter-delay {
+	animation-delay: 100ms;
+}
+
+.welcome-prompt-update {
+	animation: prompt-update 260ms ease-out both;
+}
+
+dialog[open] {
+	animation: setup-dialog-in 180ms ease-out both;
+}
+
+@keyframes welcome-enter {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes prompt-update {
+	from {
+		opacity: 0;
+		transform: translateY(5px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes setup-dialog-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px) scale(0.99);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.welcome-enter,
+	.welcome-prompt-update,
+	dialog[open] {
+			animation: none;
+		}
+}
