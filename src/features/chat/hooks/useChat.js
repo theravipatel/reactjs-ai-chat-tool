@@ -1,5 +1,8 @@
 import { useEffect, useReducer, useRef } from 'react';
-import { sendMessage } from '../services/geminiService';
+import {
+    getGeminiErrorMessage,
+    sendMessage,
+} from '../services/geminiService';
 import {
     getChatSessions,
     saveChatSessions,
@@ -98,10 +101,10 @@ export function useChat() {
     };
 
 
-    const sendChatMessage = async (message) => {
-        const userPrompt = message.trim();
+    const sendChatMessage = async (message, image, modelId) => {
+        const userPrompt = message.trim() || (image ? 'Describe this image.' : '');
 
-        if (!userPrompt || requestInProgressRef.current) return;
+        if ((!userPrompt && !image) || requestInProgressRef.current) return;
 
         requestInProgressRef.current = true;
 
@@ -112,10 +115,7 @@ export function useChat() {
 
         const sessionTitle = createSessionTitle(userPrompt);
 
-        const userMessage = createMessage(
-            'user',
-            userPrompt
-        );
+        const userMessage = createMessage('user', userPrompt, image);
 
         const updatedHistory = appendMessage(
             chatHistory,
@@ -139,7 +139,9 @@ export function useChat() {
             result = await sendMessage(
                 userPrompt,
                 currentInteractionId,
-                apiKey
+                apiKey,
+                modelId,
+                image
             );
         } catch (error) {
             console.error(
@@ -149,7 +151,7 @@ export function useChat() {
 
             const errorMessage = !localStorage.getItem('gemini_api_key')?.trim()
                 ? 'Your Gemini API key is missing. Please refresh the page and complete setup again.'
-                : 'Sorry, I couldn’t get a response. Please check your API key and try again.';
+                : getGeminiErrorMessage(error) ?? 'Sorry, I couldn’t get a response. Please check your API key and try again.';
 
             const failedMessage = createMessage(
                 'model',

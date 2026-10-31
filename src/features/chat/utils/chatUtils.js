@@ -1,8 +1,15 @@
-export function createMessage(role, text) {
+export function createMessage(role, text, image = null) {
     return {
         id: crypto.randomUUID(),
         role,
         text,
+        ...(image && {
+            image: {
+                name: image.name,
+                mimeType: image.mimeType,
+                data: image.data,
+            },
+        }),
     };
 }
 

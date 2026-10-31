@@ -1,4 +1,17 @@
 const STORAGE_KEY = 'chat_sessions';
+const MAX_IMAGE_BASE64_LENGTH = Math.ceil((2 * 1024 * 1024) / 3) * 4;
+
+function isValidImage(image) {
+    return (
+        image !== null &&
+        typeof image === 'object' &&
+        typeof image.name === 'string' &&
+        typeof image.data === 'string' &&
+        image.data.length <= MAX_IMAGE_BASE64_LENGTH &&
+        /^[A-Za-z0-9+/]+={0,2}$/.test(image.data) &&
+        ['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'].includes(image.mimeType)
+    );
+}
 
 function normalizeMessage(message) {
     return {
@@ -15,7 +28,8 @@ function isValidMessage(message) {
         message !== null &&
         typeof message === 'object' &&
         ['user', 'model'].includes(message.role) &&
-        typeof message.text === 'string'
+        typeof message.text === 'string' &&
+        (message.image === undefined || isValidImage(message.image))
     );
 }
 

@@ -71,7 +71,7 @@ function App() {
                     />
                 </section>
  
-                <div className='shrink-0 bg-zinc-900 px-4 pt-3 pb-2 sm:px-6 sm:pt-4'>
+                <div className='shrink-0 px-4 pt-3 pb-2 sm:px-6 sm:pt-4'>
                     <ChatInput
                         isLoading={isLoading}
                         onSendMessage={sendChatMessage}

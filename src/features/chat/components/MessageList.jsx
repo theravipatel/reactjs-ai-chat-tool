@@ -1,4 +1,5 @@
 import ChatMessage from './ChatMessage';
+import Logo from '../../../shared/components/Logo';
 
 function MessageList({ messages, isLoading }) {
     const displayName = localStorage.getItem('display_name')?.trim() || 'there';
@@ -28,13 +29,13 @@ function MessageList({ messages, isLoading }) {
                 {
                     isLoading && (
                         <div className="flex flex-col items-start">
-                            <div className="text-xs font-semibold mb-1 text-zinc-500 uppercase tracking-wider">
-                                AI
+                            <div role="img" aria-label="Assistant" className="mb-1">
+                                <Logo size="small" />
                             </div>
 
                             <div
                                 role="status"
-                                className="flex items-center gap-1.5 py-2"
+                                className="flex max-w-[85%] items-center gap-1.5 rounded-2xl rounded-tl-none border border-zinc-700 bg-zinc-800 px-4 py-3"
                             >
                                 <span className="sr-only">
                                     AI is thinking...
