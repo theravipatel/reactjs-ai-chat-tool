@@ -1,13 +1,15 @@
 import ChatMessage from './ChatMessage';
 
 function MessageList({ messages, isLoading }) {
+    const displayName = localStorage.getItem('display_name')?.trim() || 'there';
+
     return (
         <div className="max-w-3xl mx-auto w-full pt-4 pb-24 text-left">
             {
                 messages.length === 0 && (
                     <div className="h-[50vh] flex items-center justify-center">
                         <h1 className="text-4xl text-center font-bold bg-linear-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                            Hello User, Ask me Anything
+                            What are we exploring today, {displayName}?
                         </h1>
                     </div>
                 )

@@ -5,6 +5,8 @@ import MessageList from './features/chat/components/MessageList';
 import ChatSidebar from './features/chat/components/ChatSidebar';
 import ChatInput from './features/chat/components/ChatInput';
 import WelcomeScreen from './features/onboarding/components/WelcomeScreen';
+import Footer from './shared/components/Footer';
+import Header from './shared/components/Header';
 
 function App() {
     const [isSetupComplete, setIsSetupComplete] = useState(
@@ -45,7 +47,7 @@ function App() {
     }
 
     return (
-        <div className='grid grid-cols-5 h-screen w-screen overflow-hidden bg-zinc-900'>
+        <div className='app-grid-background grid h-dvh w-full grid-cols-5 overflow-hidden'>
             {/* Left Section */}
             <ChatSidebar
                 chatSessions={chatSessions}
@@ -56,10 +58,11 @@ function App() {
             />
             {/* Left Section */}
             {/* Right Section */}
-            <main className='col-span-5 md:col-span-4 flex flex-col h-full overflow-hidden relative'>
+            <main className='col-span-5 flex h-full min-h-0 flex-col overflow-hidden md:col-span-4'>
+                <Header className="mx-auto flex w-full max-w-6xl shrink-0 items-center justify-between border-b border-zinc-800 px-6 py-1" />
                 <section
                     aria-label="Chat conversation"
-                    className='flex-1 overflow-y-auto p-6 scrollbar-thin'
+                    className='min-h-0 flex-1 overflow-y-auto p-6 scrollbar-thin'
                     ref={chatContainerRef}
                 >
                     <MessageList
@@ -68,12 +71,13 @@ function App() {
                     />
                 </section>
  
-                <div className='absolute bottom-0 left-0 right-0 bg-linear-to-t from-zinc-900 via-zinc-900 via-80% to-transparent pt-6 pb-6 px-6'>
+                <div className='shrink-0 bg-zinc-900 px-4 pt-3 pb-2 sm:px-6 sm:pt-4'>
                     <ChatInput
                         isLoading={isLoading}
                         onSendMessage={sendChatMessage}
                     />
                 </div>
+                <Footer className="mx-auto flex w-full max-w-6xl shrink-0 flex-col items-start justify-between gap-3 border-t border-zinc-800 px-4 py-1 text-xs text-zinc-500 sm:flex-row sm:items-center sm:px-6" />
             </main>
             {/* Right Section */}
         </div>

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useOnboarding } from '../hooks/useOnboarding';
+import Footer from '../../../shared/components/Footer';
+import Header from '../../../shared/components/Header';
 
 const conversationStarters = [
     {
@@ -42,23 +44,13 @@ function WelcomeScreen({ onSetupComplete }) {
     };
 
     return (
-        <main className="welcome-shell flex min-h-screen flex-col px-5 text-zinc-100 sm:px-8">
-            <header className="welcome-enter mx-auto flex w-full max-w-6xl items-center justify-between border-b border-zinc-800/80 py-5">
-                <div className="flex items-center gap-3">
-                    <span className="flex size-9 items-center justify-center rounded-xl border border-pink-500/30 bg-pink-500/10 text-xl text-pink-400" aria-hidden="true">
-                        ✦
-                    </span>
-                    <span className="text-sm font-semibold tracking-wide text-zinc-100">
-                        AI Chat
-                    </span>
-                </div>
-                <span className="text-xs text-zinc-500">Simple chat, powered by Gemini</span>
-            </header>
+        <main className="app-grid-background flex min-h-screen flex-col px-5 text-zinc-100 sm:px-8">
+            <Header className="welcome-enter mx-auto flex w-full max-w-6xl items-center justify-between border-b border-zinc-500/80 py-5" />
 
             <section className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-12 sm:py-16">
                 <div className="welcome-enter max-w-3xl">
                     <h1 className="max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                        Welcome to AI Chat
+                        Welcome to React AI Chat
                     </h1>
 
                     <p className="mt-3 max-w-xl text-base leading-7 text-zinc-400">
@@ -122,33 +114,7 @@ function WelcomeScreen({ onSetupComplete }) {
                 </div>
             </section>
 
-            <footer className="welcome-enter mx-auto flex w-full max-w-6xl items-center justify-between border-t border-zinc-800/80 py-4 text-xs text-zinc-500">
-                <span>AI Chat</span>
-                <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-6">
-                    <p>
-                        Source code is available on{' '}
-                        <a
-                            href="https://github.com/theravipatel/reactjs-ai-chat-tool"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded bg-pink-500/10 px-1.5 py-1 font-medium text-pink-300 underline decoration-pink-500/50 underline-offset-2 transition hover:bg-pink-500/20 hover:text-pink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
-                        >
-                            GitHub
-                        </a>
-                    </p>
-                    <p>
-                        Developed by{' '}
-                        <a
-                            href="https://www.linkedin.com/in/ravipatelofficial/"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded bg-pink-500/10 px-1.5 py-1 font-medium text-pink-300 underline decoration-pink-500/50 underline-offset-2 transition hover:bg-pink-500/20 hover:text-pink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
-                        >
-                            Ravi Patel
-                        </a>
-                    </p>
-                </div>
-            </footer>
+            <Footer className="welcome-enter mx-auto flex w-full max-w-6xl items-center justify-between border-t border-zinc-500/80 py-4 text-xs text-zinc-500" />
 
             {showSetup && (
                 <dialog
@@ -157,9 +123,6 @@ function WelcomeScreen({ onSetupComplete }) {
                     onCancel={(event) => {
                         event.preventDefault();
                         closeSetup();
-                    }}
-                    onClick={(event) => {
-                        if (event.target === event.currentTarget) closeSetup();
                     }}
                     className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-left text-zinc-100 shadow-2xl backdrop:bg-black/75 backdrop:backdrop-blur-sm sm:p-8"
                 >
@@ -207,9 +170,21 @@ function WelcomeScreen({ onSetupComplete }) {
                             className="mb-5 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/30"
                         />
 
-                        <label htmlFor="gemini-api-key" className="mb-2 block text-sm font-medium">
+                        <label htmlFor="gemini-api-key" className="mb-1 block text-sm font-medium">
                             Gemini API key
                         </label>
+                        <p className="mb-3 text-xs text-zinc-500">
+                            Need one?{' '}
+                            <a
+                                href="https://ai.google.dev/gemini-api/docs/get-started#get-api-key"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded text-pink-300 underline decoration-pink-500/50 underline-offset-2 transition hover:text-pink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                            >
+                                Create a key in Google AI Studio
+                                <span aria-hidden="true"> ↗</span>
+                            </a>
+                        </p>
                         <input
                             id="gemini-api-key"
                             name="apiKey"
