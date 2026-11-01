@@ -1,85 +1,106 @@
-# Simple AI Chat Tool using React JS
+# ReactJS AI Chat Tool
 
-## 1) Installation
+A browser-based AI chat application built with React, Vite, and the Google Gemini API. It supports saved conversations, model selection, image prompts, and Markdown-formatted responses.
 
-- Install Node.js
-- Install Vite
-    - Why Vite?
-        - Officially recommended by React docs
-        - Super fast dev server
-        - Cleaner build process
-        - Supports TypeScript, CSS modules, pre-processors, and more!
-- Setup React App via Terminal:
-    -   ```
-        npm create vite@latest
-        ```
-    - Follow the prompts and select as per your need
-- Install Node Modules
-    -   ```
-        npm install
-        ```
-- Run the React App
-    -   ```
-        npm run dev
-        ```
-    - App should now run on localhost:5173 (Vite's default port).
+**Live demo:** [reactjsaichat.onrender.com](https://reactjsaichat.onrender.com/)
 
+> The app asks you to provide your own Gemini API key. Review the [security and privacy notes](#security-and-privacy) before using the live demo.
 
-## 2) Installation of Tailwind CSS in React
-- To install `Tailwind CSS v4` in a React.js project built with Vite, follow the streamlined step-by-step guide from the official site i.e. (As of today - https://tailwindcss.com/docs/installation/using-vite). Vite is the modern, industry-standard tool for creating React applications.
-- 1) Install `tailwindcss` and `@tailwindcss/vite` via npm:
-    - `npm install tailwindcss @tailwindcss/vite`
-- 2) Add the `@tailwindcss/vite` plugin to your Vite configuration:
-    -   ```jsx
-        import tailwindcss from '@tailwindcss/vite'
+## Features
 
-        export default defineConfig({
-            plugins: [
-                tailwindcss(),
-            ],
-        })
-        ```
-- 3) Add an `@import` to our CSS file that imports Tailwind CSS.
-    - `@import "tailwindcss";`
-- 4) Run your build process with npm run dev or whatever command is configured in your package.json file.
+- Chat with Gemini models through the Google Gen AI SDK.
+- Continue conversations using Gemini interaction IDs.
+- Create and switch between saved chat sessions.
+- Send text and supported image attachments (PNG, JPEG, WebP, HEIC, and HEIF; up to 2 MiB).
+- Render model responses as Markdown with `react-markdown`.
+- Choose an available model; the selected model is remembered in the browser.
+- Validate the Gemini API key during the initial setup flow.
+- Handle loading, empty-response, rate-limit, and service-unavailable states.
 
-## 3) Generate Gemini API Key & Integrate it in React App
-- We can get a Gemini API key by logging into Google AI Studio (https://aistudio.google.com/app/apikey) and creating a new key.
-- The most secure and scalable approach is to route requests through a backend server (like Laravel/Node.js) to protect our key but we are not using backend as of now so we will integrate the key from frontend side.
-- To integrate the Gemini Key from frontend side, we can run the below command to install the official Google Gen AI SDK.
-    - Ref. Documentation as of Oct-2026 (https://ai.google.dev/gemini-api/docs/get-started)
-    -   ```cmd
-        npm install @google/genai
-        ```
-- Now to store our API key securely, create a `.env` file in the root of our project.
-    - Example:
-        -   ```env
-            GEMINI_API_KEY=our_actual_api_key_here
-            ```
-- Integrate google/genai
-    - Example:
-        -   ```jsx
-            import { GoogleGenAI } from '@google/genai';
-            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-            const ai = new GoogleGenAI({apiKey});
+## Technology Stack
 
-            const response = await ai.interactions.create({
-                model: 'gemini-3.8-flash',
-                input: inputMessage,
-            });
-            conole.log(response.output_text);
-            ```
+- React 19 for the component-based interface and hooks.
+- Vite for local development and production builds.
+- Tailwind CSS 4 through the Vite plugin.
+- `@google/genai` for Gemini API interactions.
+- `react-markdown` for formatted model output.
+- Browser `localStorage` for API key, display name, model preference, and chat sessions.
 
+## Project Structure
 
-## 4) Format the Gemini Raw response by using react-markdown library
-- Gemini provides structured text formatted in Markdown by default (`*** or **`).
-- Placing Markdown syntax natively into a React JSX layout causes text to display raw punctuation characters rather than structured layout headers and linebreaks.
-- To resolve this gracefully, used the react-markdown library to convert formatting structures dynamically into matching Tailwind CSS elements.
-    - Command to install:
-        -   ```cmd
-            npm install react-markdown
-            ```
-    - Example:
-        -   ```jsx
-            <ReactMarkdown>{ responseMessage }</ReactMarkdown>
-            ```
+```text
+src/
+├── App.jsx
+├── features/
+│   ├── chat/
+│   │   ├── components/       # Chat input, messages, list, and sidebar
+│   │   ├── hooks/            # Chat workflow and orchestration
+│   │   ├── reducers/         # Chat state transitions
+│   │   ├── repositories/     # Browser-backed chat persistence
+│   │   ├── services/         # Gemini API integration
+│   │   └── utils/            # Message and session helpers
+│   └── onboarding/
+│       ├── components/       # Initial setup screen
+│       └── hooks/            # Setup validation and persistence
+└── shared/
+    └── components/           # Header, footer, and logo
+```
+
+## Architecture and Code Patterns
+
+The app uses a feature-oriented structure: chat-specific UI and logic live together under `features/chat`, onboarding has its own feature, and reusable layout elements live under `shared`.
+
+### Chat data flow
+
+```text
+App
+├── WelcomeScreen -> useOnboarding -> geminiService.validateApiKey
+└── Chat UI -> useChat
+    ├── chatReducer        -> updates UI state from explicit actions
+    ├── geminiService      -> validates and sends Gemini requests
+    ├── chatRepository     -> loads and saves sessions in localStorage
+    └── chatUtils          -> creates and updates messages and sessions
+```
+
+`App` selects the onboarding or chat experience based on browser setup values. During onboarding, `useOnboarding` validates the supplied key through the Gemini service before storing the key and display name. Once setup is complete, `useChat` coordinates conversation actions: it dispatches reducer actions, calls the Gemini service, and saves updated sessions through the repository. Chat components receive state and callbacks rather than owning API or persistence logic.
+
+The reducer keeps chat state transitions explicit. The service isolates Gemini SDK calls and response/error handling. The repository validates parsed session data before it is used, while utility functions handle message and session construction. This separation keeps rendering, state transitions, API communication, and browser persistence in distinct modules.
+
+### Markdown responses
+
+Gemini responses can contain Markdown formatting. The chat message component renders that content with `react-markdown` instead of displaying the Markdown markers as plain text.
+
+## Getting Started
+
+### Requirements
+
+- Node.js compatible with the Vite version in this project.
+- A Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+### Install and run
+
+```bash
+npm install
+npm run dev
+```
+
+Open the local URL printed by Vite in the terminal. On first launch, enter a display name and Gemini API key in the setup screen. The app validates the key before continuing.
+
+### Available scripts
+
+```bash
+npm run dev      # Start the Vite development server
+npm run lint     # Run ESLint
+npm run build    # Create a production build in dist/
+npm run preview  # Preview the production build locally
+```
+
+## Gemini API Configuration
+
+This project uses the official [`@google/genai`](https://ai.google.dev/gemini-api/docs/get-started) SDK. No `.env` file is required: the application collects the API key through its setup screen, validates it, and stores it in browser `localStorage` for subsequent visits. The available model choices are defined in the chat feature's Gemini service.
+
+## Security and Privacy
+
+This is a client-only demo. The Gemini API key is stored in browser `localStorage` and is used by requests sent directly from the browser to Gemini; it is not protected by a backend. A deployed frontend cannot keep a client-side key secret. Use a key appropriate for personal or testing use, understand the provider's usage and billing policies, and avoid entering a key on a shared or untrusted device. Remove the key by clearing this site's browser storage.
+
+Chat sessions, the display name, and the selected model are also stored in browser `localStorage` on that device. They are not synchronized to a project backend.
